@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "skills": {
+    "telegram-messaging": {
+      "version": "0.2.2",
+      "installedAt": 1785484241757,
+      "registry": "https://clawhub.ai",
+      "artifact": {
+        "kind": "archive",
+        "sha256": "a6da61138e32d0261561087252d95fe5e694e6d625fc593a8a5c5e22b5adef1e",
+        "integrity": "sha256-ptphE44y0CYVYQhyUtlf5eaU5tYl/Fk6ilxeIrWt7x4="
+      },
+      "skillFile": {
+        "path": "SKILL.md",
+        "sha256": "2443599c45a025f2cd687994ebeee787bfd1984741c6fdf6cf209ec33635aac6"
+      },
+      "verification": {
+        "schema": "clawhub.skill.verify.v1",
+        "ok": true,
+        "decision": "pass",
+        "reasons": [],
+        "card": {
+          "available": true,
+          "path": "skill-card.md",
+          "url": "https://wry-manatee-359.convex.site/api/v1/skills/telegram-messaging/card?ownerHandle=hith3sh&version=0.2.2",
+          "sha256": "8746ab35fd585fb9841883791a8cef098670d7f38c348e93c5c7814399ea4e0e",
+          "size": 2491,
+          "contentType": "text/markdown; charset=utf-8"
+        },
+        "artifact": {
+          "sourceFingerprint": "7b5605e8cad8057d565c676aab77827e35a89e370a66c1656be6d28c44b7c6ae",
+          "bundleFingerprints": [
+            "63076bceba1e5a7c922980442aa7b8a840a9b73866a49282ed70eca6b1e15e50",
+            "459b316a37ab1a62cc08e9bd649085fce434564fd0261498a7136756dddddf1b"
+          ],
+          "files": [
+            {
+              "path": "SKILL.md",
+              "size": 14397,
+              "sha256": "2443599c45a025f2cd687994ebeee787bfd1984741c6fdf6cf209ec33635aac6",
+              "contentType": "text/markdown"
+            }
+          ]
+        },
+        "provenance": {
+          "source": "unavailable",
+          "reason": "No server-resolved GitHub import provenance is stored for this version."
+        },
+        "security": {
+          "status": "clean",
+          "passed": true,
+          "rawStatus": "clean",
+          "verdict": "benign",
+          "confidence": "high",
+          "summary": "This is a disclosed Telegram bot integration that uses ClawLink for credentials and requires confirmation before write actions.",
+          "model": "gpt-5.5",
+          "checkedAt": 1780997280358,
+          "signals": {
+            "staticScan": {
+              "status": "clean",
+              "rawStatus": "clean",
+              "reasonCodes": [],
+              "summary": "No suspicious patterns detected.",
+              "engineVersion": "v2.4.24",
+              "checkedAt": 1780989581138
+            },
+            "virusTotal": {
+              "status": "clean",
+              "rawStatus": "clean",
+              "verdict": null,
+              "analysis": null,
+              "source": "engines",
+              "scanner": null,
+              "engineStats": {
+                "harmless": 0,
+                "malicious": 0,
+                "suspicious": 0,
+                "undetected": 63
+              },
+              "checkedAt": 1780993611210
+            },
+            "skillSpector": {
+              "status": "clean",
+              "rawStatus": "clean",
+              "score": 0,
+              "severity": "LOW",
+              "recommendation": "SAFE",
+              "issueCount": 0,
+              "scannerVersion": "2.1.1",
+              "summary": null,
+              "error": null,
+              "checkedAt": 1780997239595
+            },
+            "dependencyRegistry": null
+          }
+        },
+        "signature": {
+          "status": "unsigned"
+        }
+      }
+    }
+  }
+}
