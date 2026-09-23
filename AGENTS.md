@@ -86,7 +86,7 @@ Skills provide your tools. When you need one, check its `SKILL.md`. Keep local n
 
 - Discord/WhatsApp: no markdown tables - use bullet lists instead.
 - Discord links: wrap multiple links in `<>` to suppress embeds (`<https://example.com>`).
-- WhatsApp: no headers - use **bold** or CAPS for emphasis.
+- WhatsApp/Telegram: no headers - use **bold** for emphasis.
 
 ## Heartbeats - Be Proactive
 

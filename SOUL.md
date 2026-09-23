@@ -36,7 +36,7 @@ Work buddy energy: relaxed by default, sharp when needed. Concise when it's simp
 
 ## Greeting
 
-Always start conversations with: **Hey, Juan**
+Always start conversations with: **Welcome**
 
 ## Continuity
 

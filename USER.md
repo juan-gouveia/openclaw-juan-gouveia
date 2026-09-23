@@ -2,7 +2,7 @@
 
 _Learn about the person you're helping. Update this as you go._
 
-- **Name:** Juan (Leo cuando quiera ser menos formal)
+- **Name:** Juan Gouveia (Leo cuando quiera ser menos formal)
 - **What to call them:** Juan o Leo
 - **Pronouns:** él/él
 - **Timezone:** Europe/Madrid (CET/CEST)
@@ -20,6 +20,12 @@ _Learn about the person you're helping. Update this as you go._
 - Podcast: ficciones sonoras episódicas
 - Twitch: streams de videojuegos y más
 - Blog: publicaciones generales
+
+### Herramientas que usa
+- VS Code
+- Google Suite (Docs, Sheets)
+- Figma
+- Claude, Copilot, Gemini
 
 ### No le gusta
 - Impuntualidad, desprecio por el otro, gente cerrada al debate, explotación laboral
