@@ -16,20 +16,9 @@
   - There's a picture properly renamed and stored corresponding to the current day
   - Agent should be able to list back existing pictures inside the folder
 
+4. Implementation (2026-09-28) — `skills/picoftheday/`
+  - Name format: `picoftheday - NNN - DD-MM-YY.jpg` (NNN from 001, next = highest in folder + 1), Drive folder "Pic of the Day" via Zapier MCP
+  - `picoftheday-planner` automation (08:50 Europe/Madrid) picks a random time and creates a one-shot job that sends the request on Telegram
+  - Upload uses the Telegram file URL (Zapier only accepts public URLs); token copy in secret store entry `TELEGRAM_BOT_TOKEN_FILES`
 
-## Check Hotmail for specific mail
 
-1. What does this skill do? One sentence.
-  - Goes to specified folder in Hotmail and notifies if there's new messages
-
-2. What input does the agent need? What do you give it, in what format — and what does it already know from the five configuration files?
-  - Agent needs access to Hotmail account
-  - Agent needs to know which folder(s) to check
-  - Task will be automated to happen every set amount of hours
-
-3. What does a good output look like? Format, destination (a Doc, a Calendar event, a Telegram message…), and how you'll know it worked.
-  - Output must be a Telegram message that reads "You've got a new Game message"
-  - If there's no new messages, then nothing is sent
-  - User can request for a check at any given moment
-    + For new messages, use same output
-    + For no new messages, use "No new messages from Game"
