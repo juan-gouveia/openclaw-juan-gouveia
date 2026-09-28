@@ -14,3 +14,6 @@ openclaw-workspace-state.json
 .env
 *.key
 credentials/
+
+# Picture of the Day local state
+skills/picoftheday/state.json
