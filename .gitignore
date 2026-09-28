@@ -1,0 +1,16 @@
+# Personal profile and agent memory
+USER.md
+MEMORY.md
+memory/
+
+# Raw files received via chat
+media/
+
+# Machine-local state
+openclaw-workspace-state.json
+*.migrated.*
+
+# Safety net in case secrets ever land here
+.env
+*.key
+credentials/
