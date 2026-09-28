@@ -69,13 +69,17 @@ def run(cmd, **kw):
 
 def zapier(tool, action, tool_name, params):
     args = {"selected_api": DRIVE_API, "action": action, "tool_name": tool_name, "params": params}
+    # --no-oauth: fail fast with 401 instead of waiting for a browser login nobody will do.
     res = run([CONFIG["mcporter_bin"], "--config", CONFIG["mcporter_config"], "call",
-               f"zapier.{tool}", "--args", json.dumps(args)], timeout=180)
+               f"zapier.{tool}", "--no-oauth", "--args", json.dumps(args)], timeout=180)
     out = res.stdout.strip()
     try:
         data = json.loads(out)
     except json.JSONDecodeError:
-        sys.exit(f"Error de Zapier: {mask(out or res.stderr)[:500]}")
+        err = out + res.stderr
+        if "401" in err or "auth required" in err.lower() or "OAuth" in err:
+            sys.exit("Zapier necesita volver a autorizarse: hay que ejecutar 'mcporter auth zapier' en el servidor.")
+        sys.exit(f"Error de Zapier: {mask(err)[:500]}")
     return data
 
 
