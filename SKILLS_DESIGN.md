@@ -28,7 +28,7 @@
   - Every morning this skill collects the newest AI headlines from Wired and El País, writes them with their links into a Google Doc and sends the user the doc's link on Telegram.
 
 2. What input does the agent need? What do you give it, in what format — and what does it already know from the five configuration files?
-  - Sources (RSS read with `web_fetch`; no `web_search` provider is configured):
+  - Sources (RSS read with `curl` one-liners given in SKILL.md; no `web_search` provider is configured):
     + El País: tag feed `https://feeds.elpais.com/mrss-s/list/ep/site/elpais.com/tag/inteligencia_artificial_a` (same news as https://elpais.com/noticias/inteligencia-artificial/)
     + Wired: https://es.wired.com/tag/inteligencia-artificial has no feed of its own, so use the general feed `https://es.wired.com/feed/rss` and keep only items whose `media:keywords` include "Inteligencia Artificial" (they match the tag page)
   - Maximum 6 news per document, maximum 3 per source, newest first
@@ -42,7 +42,7 @@
   - A Telegram message to the user with the link to the doc and how many news it has
   - It worked if: the message arrives after 09:00, the doc shows today's "Actualizado" time, no headline repeats from the previous day, and the links open the articles
 
-4. Implementation (planned, not built yet) — `skills/noticias-ia/`, only `SKILL.md`, no scripts
+4. Implementation (2026-09-29) — `skills/noticias-ia/`, only `SKILL.md`, no scripts
   - Zapier Google Docs actions called directly with `mcporter` (full path and config, as in Pic of the Day):
     1. `google_docs_find_a_document` by name; if there is no result, `google_docs_create_document_from_text` with placeholder text
     2. `google_docs_make_api_get_request` (read action; needs `method` and `fail_on_errors`) with `fields` limited to `endIndex` and the text: gives the last `endIndex` and the previous "Actualizado" time
@@ -50,6 +50,7 @@
     4. `google_docs_append_text_to_document` with the headlines as HTML (`<ul><li><a href>`)
   - Automation made with `openclaw cron add` at 09:00 Europe/Madrid, isolated session, `--announce --channel telegram` to the user's chat: the run's final text is the Telegram message
   - Steps 1–4 tested on 2026-09-29 with the test doc "PRUEBA Noticias OpenClaw": links clickable, old content fully replaced, same doc link
+  - Automation `noticias-ia` created (daily 09:00 Europe/Madrid). Agent test runs on 2026-09-29 OK: doc created, 4 news picked correctly after the cutoff, final text is only the Telegram message
 
 
 ## 
