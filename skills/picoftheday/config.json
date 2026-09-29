@@ -1,0 +1,13 @@
+{
+  "drive_folder_id": "1Sbs5duMB2VspBfLNjerJFOcpIL0XBwUc",
+  "drive_folder_name": "Pic of the Day",
+  "telegram_to": "112857013",
+  "tz": "Europe/Madrid",
+  "window": ["09:00", "21:00"],
+  "name_pattern": "picoftheday - {n:03d} - {date}",
+  "date_format": "%d-%m-%y",
+  "token_env_name": "TELEGRAM_BOT_TOKEN_FILES",
+  "mcporter_bin": "/var/lib/openclaw/tools/node/npm/bin/mcporter",
+  "mcporter_config": "/root/.openclaw/workspace/config/mcporter.json",
+  "request_message": "📸 ¡Hora de la Picture of the Day! Mándame la foto de hoy."
+}
