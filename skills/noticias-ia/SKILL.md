@@ -1,12 +1,12 @@
 ---
 name: noticias-ia
-description: "Daily AI news: collect the newest AI headlines from Wired and El País and overwrite the Google Doc 'Noticias diarias de IA' (Drive root) with them via Zapier, then reply with the doc link. Use when the noticias-ia automation runs (09:00 Europe/Madrid) or when Juan asks for the AI news / noticias de IA."
+description: "Daily AI news: collect the newest AI headlines from Wired and El País into the Google Doc 'Noticias diarias de IA' (Drive root) via Zapier — the first run of the day replaces the doc, later runs append a block — then reply with the doc link. Use when the noticias-ia automation runs (09:00 and 21:00 Europe/Madrid) or when Juan asks for the AI news / noticias de IA."
 metadata: { "openclaw": { "emoji": "📰", "requires": { "bins": ["curl"] } } }
 ---
 
 # Noticias diarias de IA
 
-Every day at 09:00 (Europe/Madrid) an automation runs this skill. Collect up to 6 AI headlines published since the last run (at most 3 from Wired and 3 from El País), write them into the Google Doc **Noticias diarias de IA** (Drive root, always the same file) and finish with a short message for Juan. The automation delivers your final text to Telegram, so don't send it yourself.
+Every day at 09:00 and 21:00 (Europe/Madrid) an automation runs this skill. Collect up to 6 AI headlines published since the last run (at most 3 from Wired and 3 from El País), write them into the Google Doc **Noticias diarias de IA** (Drive root, always the same file) and finish with a short message for Juan. The first run of the day (**new day** mode) replaces the whole doc; any later run that day (**append** mode) adds a new block at the end and leaves the earlier news untouched. The automation delivers your final text to Telegram, so don't send it yourself.
 
 No scripts: everything is `curl` for the feeds and direct `mcporter` calls to Zapier. Do the steps in order and stop at the first error.
 
@@ -35,7 +35,7 @@ Read action, `"action":"document"`, `"tool_name":"google_docs_find_a_document"`,
 - If `results` has a document, keep its `id` (DOC_ID) and `alternateLink` (DOC_LINK).
 - If `results` is empty, this is the first run. Create it with the write action `"action":"newtxtdocument"`, `"tool_name":"google_docs_create_document_from_text"`, `"params":{"title":"Noticias diarias de IA","file":"Noticias"}`, and keep `id` and `alternateLink` from the result. The new doc holds the placeholder text "Noticias": still do steps 2 and 4 so it gets deleted. The cutoff (step 2) is 24 hours ago.
 
-### 2. Read the doc: end position and last review time
+### 2. Read the doc: end position, last review time and mode
 
 Read action, `"action":"_zap_raw_request"`, `"tool_name":"google_docs_make_api_get_request"`, params:
 
@@ -45,7 +45,9 @@ Read action, `"action":"_zap_raw_request"`, `"tool_name":"google_docs_make_api_g
 ```
 
 - END = the `endIndex` of the **last** element in `body.content`.
-- CUTOFF = the date and time in the line that starts with `Actualizado:` (format `DD-MM-YYYY HH:MM (UTC+HH:MM)`). If there is no such line (doc just created), CUTOFF = 24 hours ago.
+- Lines that start with `Actualizado:` have the format `DD-MM-YYYY HH:MM (UTC+HH:MM)`. There can be several (one per run today).
+- CUTOFF = the date and time in the **last** `Actualizado:` line. If there is none (doc just created), CUTOFF = 24 hours ago.
+- MODE: if the **first** `Actualizado:` line has today's date (`TZ=Europe/Madrid date '+%d-%m-%Y'`), MODE = **append**. Otherwise (older date, or no such line), MODE = **new day**. Decide by that date, never by the clock time.
 - Note the current time for the new line: `TZ=Europe/Madrid date '+%d-%m-%Y %H:%M (UTC%:z)'`.
 
 ### 3. Collect the news
@@ -68,7 +70,7 @@ For each source, go down the list from the top and take the first items whose `p
 
 ### 4. Empty the doc
 
-Skip this step if END is 2 or less (doc already empty). Otherwise write action, `"action":"_zap_raw_request"`, `"tool_name":"google_docs_make_api_mutating_request"`, params (END − 1 as a number):
+Only in **new day** mode: in **append** mode skip this step, the earlier news must stay. Also skip it if END is 2 or less (doc already empty). Otherwise write action, `"action":"_zap_raw_request"`, `"tool_name":"google_docs_make_api_mutating_request"`, params (END − 1 as a number):
 
 ```
 {"url":"https://docs.googleapis.com/v1/documents/DOC_ID:batchUpdate","method":"POST","fail_on_errors":"true",
@@ -79,7 +81,9 @@ The result must have `"status": 200`.
 
 ### 5. Write the news
 
-Write action, `"action":"append"`, `"tool_name":"google_docs_append_text_to_document"`, `"params":{"file":"DOC_ID","newline":"false","text":"<HTML>"}`. The HTML (escape `"` as `\"` inside the JSON string):
+Write action, `"action":"append"`, `"tool_name":"google_docs_append_text_to_document"`, `"params":{"file":"DOC_ID","newline":"false","text":"<HTML>"}`. It always adds at the end of the doc. The HTML (escape `"` as `\"` inside the JSON string):
+
+**New day** mode:
 
 ```
 <h1>Noticias diarias de IA</h1>
@@ -88,6 +92,15 @@ Write action, `"action":"append"`, `"tool_name":"google_docs_append_text_to_docu
 <ul><li><a href="LINK">TITLE</a></li> ...</ul>
 <h2>El País</h2>
 <ul><li><a href="LINK">TITLE</a></li> ...</ul>
+```
+
+**Append** mode: the same, except the first line. Use `<h1>Actualización de la noche</h1>` if the current time is 20:00 or later, otherwise `<h1>Actualización de las HH:MM</h1>` with the current time:
+
+```
+<h1>Actualización de la noche</h1>
+<p><i>Actualizado: 30-09-2026 21:00 (UTC+02:00)</i></p>
+<h2>Wired</h2>
+...
 ```
 
 - A source with no new items gets `<p>Sin noticias nuevas.</p>` instead of the list; a failed feed gets `<p>No se pudo consultar la fuente.</p>`.
@@ -102,8 +115,10 @@ Your final reply is sent to Juan as it is, so it must be **only** this message: 
 DOC_LINK
 ```
 
-With no news: `📰 Hoy no hay noticias nuevas de IA.` plus the link. If a step failed, say which step and the error in one or two lines; if the doc was already emptied (step 4) and step 5 failed, say so, because the doc is empty until the next run.
+With no news: `📰 Hoy no hay noticias nuevas de IA.` plus the link.
+
+In **append** mode, the first line is `📰 Noticias de IA (actualización de la noche): N nuevas (Wired X, El País Y)` (or `(actualización de las HH:MM)` before 20:00); with no news, `📰 Esta noche no hay noticias nuevas de IA.` (before 20:00: `📰 No hay noticias nuevas de IA desde la última actualización.`) plus the link. If a step failed, say which step and the error in one or two lines; if the doc was already emptied (step 4) and step 5 failed, say so, because the doc is empty until the next run.
 
 ## Automation
 
-The `noticias-ia` automation (`openclaw cron list`) runs daily at 09:00 Europe/Madrid in an isolated session and delivers the final text to Juan's Telegram chat. If Juan asks for the news at another time, run the same steps; the next automated run will only pick up news published after that.
+The `noticias-ia` automation (`openclaw cron list`) runs daily at 09:00 and 21:00 Europe/Madrid in an isolated session and delivers the final text to Juan's Telegram chat. If Juan asks for the news at another time, run the same steps (the mode comes from the doc, so a run in the middle of the day appends a block); the next automated run will only pick up news published after that.
