@@ -167,6 +167,18 @@ Pendiente: Skill 4 (resumen de progreso) cuando Juan lo pida.
 
 **18:46 — MAGI:** Retest con cohort: `?cohort=103/1612/1613/1622` → 403 "Missing academy_id" (cohort no sustituye a academy). Header `Academy: 5` → 403 read_certificate. `?cohort=1612&academy=5` → 403 read_certificate. **Conclusión:** el param cohort no afecta el chequeo de permisos; el backend exige academy_id + capacidad `read_certificate` que el rol de estudiante no tiene en academias 5/6. Configuración de roles servidor-side. Sugerido: preguntar al instructor o seguir con skills 5-6 alternativas.
 
+**18:54 — Juan:** Catálogo de assets = Skill 5, que me permita especificar la dificultad y lenguaje/herramienta al pedirlo para no recibir de vuelta 423 resultados en cada consulta
+
+**18:54 — MAGI:** Prueba de filtros del catálogo: `difficulty=HARD` → count=2 (Dibujando a Goku con CSS, CSS Drawing Goku); `technologies=python` → count=374; `difficulty=EASY + tech=react` → 0; `like=dashboard` → 0 (búsqueda like poco fiable); `asset_type=EXERCISE + tech=typescript` → count=11. Catálogo de tecnologías: 40+ slugs (Flask, Node, Python, React.js, TypeScript, Java, etc.). Nota: campo `technologies` inconsistente (strings o dicts — primer script falló con AttributeError, corregido tolerando ambos). Creada **Skill 5** → `/root/.openclaw/workspace/skills/4geeks-assets/SKILL.md`:
+- Endpoint: `GET /v1/registry/asset` con filtros `difficulty` (BEGINNER/EASY/INTERMEDIATE/HARD), `technologies` (slug), `asset_type`, `like`, paginación limit/offset.
+- Catálogo de slugs vía `GET /v1/registry/technology`.
+- Documentado: difficulty puede ser null en algunos assets; `like` devuelve 0 con palabras comunes; manejar technologies como strings o dicts.
+**Skills 5 de 6 completadas.** Pendiente: Skill 6 (detalle de tarea con feedback).
+
+**19:00 — Juan:** Me voy por hoy. Actualiza tus archivos para que sepas que cuando vuelva continuamos con los skills que faltan.
+
+**19:00 — MAGI:** Estado guardado en MEMORY.md y SKILL_LOG.md. **Al retomar:** crear Skill 6 (detalle de tarea con feedback) — endpoint ya probado: `GET /v1/assignment/task/{task_id}` → 200 OK con `description` (feedback del revisor), fechas (delivered_at, reviewed_at), cohort y URLs de entrega. Ejemplo verificado: id=955197 (Dashboard Tailwind, feedback "Excelente trabajo! Responsive y super limpio!"). ⚠️ El token `FOURGEEKS_STUDENT_TOKEN` expira 2026-10-02 — verificar vigencia antes de continuar; si expiró, pedir a Juan la cookie `4g_tok` de learn.4geeks.com vía masked entry. Tras la Skill 6: proyecto completo (6/6 skills) y Juan puede subir SKILL_LOG.md a su repo personal de GitHub para entrega.
+
 ## Notas pendientes / hallazgos relevantes
 
 - **Auth de LiteLLM rota (30 sep):** error 401 — la virtual key esperada empieza por `sk-`, se envió `gsk_…`. Fix: `openclaw models auth login --provider litellm` o `openclaw configure`.
