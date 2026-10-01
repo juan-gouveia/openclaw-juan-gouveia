@@ -8,7 +8,7 @@ metadata: { "openclaw": { "emoji": "📰", "requires": { "bins": ["curl"] } } }
 
 Every day at 09:00 and 21:00 (Europe/Madrid) an automation runs this skill. Collect up to 6 AI headlines published since the last run (at most 3 from Wired and 3 from El País), write them into the Google Doc **Noticias diarias de IA** (Drive root, always the same file) and finish with a short message for Juan. The first run of the day (**new day** mode) replaces the whole doc; any later run that day (**append** mode) adds a new block at the end and leaves the earlier news untouched. The automation delivers your final text to Telegram, so don't send it yourself.
 
-No scripts: everything is `curl` for the feeds and direct `mcporter` calls to Zapier. Do the steps in order and stop at the first error.
+No scripts: everything is `curl` for the feeds and direct `mcporter` calls to Zapier (3 calls per run, 4 on the first run of the day). Do the steps in order and stop at the first error.
 
 ## Zapier calls
 
@@ -28,12 +28,24 @@ EOF
 
 ## Steps
 
-### 1. Find or create the doc
+### 1. Doc id (remembered, no lookup)
+
+The doc is always the same file, so its id is kept in `/root/.openclaw/.env` (line `NOTICIAS_IA_DOC_ID=...`) and no Zapier call is needed. Read only that line, never print the rest of the file (it holds API keys):
+
+```
+grep '^NOTICIAS_IA_DOC_ID=' /root/.openclaw/.env | cut -d= -f2-
+```
+
+- DOC_ID = the printed value.
+- DOC_LINK = `https://docs.google.com/document/d/DOC_ID/edit`
+
+Go straight to step 2. If the line is missing or empty, or the step 2 call fails with 404 / "not found" (doc deleted or replaced), recover:
 
 Read action, `"action":"document"`, `"tool_name":"google_docs_find_a_document"`, `"params":{"title":"Noticias diarias de IA"}`.
 
-- If `results` has a document, keep its `id` (DOC_ID) and `alternateLink` (DOC_LINK).
-- If `results` is empty, this is the first run. Create it with the write action `"action":"newtxtdocument"`, `"tool_name":"google_docs_create_document_from_text"`, `"params":{"title":"Noticias diarias de IA","file":"Noticias"}`, and keep `id` and `alternateLink` from the result. The new doc holds the placeholder text "Noticias": still do steps 2 and 4 so it gets deleted. The cutoff (step 2) is 24 hours ago.
+- If `results` has a document, take its `id` and `alternateLink` as the new DOC_ID and DOC_LINK.
+- If `results` is empty, create it with the write action `"action":"newtxtdocument"`, `"tool_name":"google_docs_create_document_from_text"`, `"params":{"title":"Noticias diarias de IA","file":"Noticias"}`, and keep `id` and `alternateLink`. The new doc holds the placeholder text "Noticias": still do steps 2 and 4 so it gets deleted. The cutoff (step 2) is 24 hours ago.
+- Then repeat step 2 with the new id, save it in `.env` (replace the `NOTICIAS_IA_DOC_ID=` line, or append it if missing, e.g. with `sed -i` / `printf >>`, without echoing the file) and mention the new link in the final text.
 
 ### 2. Read the doc: end position, last review time and mode
 
