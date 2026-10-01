@@ -32,7 +32,9 @@ b64u() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
 NOW=$(date +%s)
 H=$(printf '{"alg":"RS256","typ":"JWT"}' | b64u)
 C=$(printf '{"iss":"%s","scope":"https://www.googleapis.com/auth/drive","aud":"https://oauth2.googleapis.com/token","iat":%s,"exp":%s}' "$(grep '"client_email"' $SA | sed -E 's/.*: *"([^"]*)".*/\1/')" $NOW $((NOW+3600)) | b64u)
-S=$(printf '%s.%s' "$H" "$C" | openssl dgst -sha256 -sign <(grep '"private_key"' $SA | sed -E 's/.*: *"//; s/",? *$//' | sed 's/\\n/\n/g') | b64u)
+grep '"private_key"' $SA | sed -E 's/.*: *"//; s/",? *$//' | sed 's/\\n/\n/g' > /tmp/sa_key_nw.pem
+S=$(printf '%s.%s' "$H" "$C" | openssl dgst -sha256 -sign /tmp/sa_key_nw.pem | b64u)
+rm -f /tmp/sa_key_nw.pem
 curl -s -d grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer -d "assertion=$H.$C.$S" https://oauth2.googleapis.com/token | grep -o '"access_token": *"[^"]*"' | sed -E 's/.*: *"([^"]*)"/\1/' > /root/.openclaw/workspace/skills/noticias-ia/state/token
 chmod 600 /root/.openclaw/workspace/skills/noticias-ia/state/token; test -s /root/.openclaw/workspace/skills/noticias-ia/state/token && echo token-ok || echo token-FAILED
 ```
