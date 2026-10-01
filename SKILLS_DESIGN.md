@@ -17,7 +17,7 @@
   - Agent should be able to list back existing pictures inside the folder
 
 4. Implementation (2026-09-28) — `skills/picoftheday/`
-  - Name format: `picoftheday - NNN - DD-MM-YY.jpg` (NNN from 001, next = highest in folder + 1), Drive folder "Pic of the Day" via Zapier MCP
+  - Name format: `picoftheday - NNN - DD-MM-YY.jpg` (NNN from 001, next = highest in folder + 1), Drive folder "Pic of the Day" (upload via Zapier; listing via Drive API with the service account, folder shared as Viewer since 2026-10-01) MCP
   - `picoftheday-planner` automation (08:50 Europe/Madrid) picks a random time and creates a one-shot job that sends the request on Telegram
   - Upload uses the Telegram file URL (Zapier only accepts public URLs); token copy in secret store entry `TELEGRAM_BOT_TOKEN_FILES`
 
@@ -44,7 +44,7 @@
   - It worked if: the message arrives after 09:00, the doc shows today's "Actualizado" time, no headline repeats from the previous day, and the links open the articles
 
 4. Implementation (2026-09-29) — `skills/noticias-ia/`, only `SKILL.md`, no scripts
-  - Zapier Google Docs actions called directly with `mcporter` (full path and config, as in Pic of the Day):
+  - (Superseded 2026-10-01: now curl + Drive API, no Zapier.) Zapier Google Docs actions called directly with `mcporter` (full path and config, as in Pic of the Day):
     1. `google_docs_find_a_document` by name; if there is no result, `google_docs_create_document_from_text` with placeholder text
     2. `google_docs_make_api_get_request` (read action; needs `method` and `fail_on_errors`) with `fields` limited to `endIndex` and the text: gives the last `endIndex` and the previous "Actualizado" time
     3. `google_docs_make_api_mutating_request`: `batchUpdate` with `deleteContentRange` from 1 to last `endIndex` − 1 (empties the doc)

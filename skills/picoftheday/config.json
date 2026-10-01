@@ -7,7 +7,9 @@
   "name_pattern": "picoftheday - {n:03d} - {date}",
   "date_format": "%d-%m-%y",
   "token_env_name": "TELEGRAM_BOT_TOKEN_FILES",
+  "google_sa_path": "/root/.openclaw/credentials/google-sa.json",
   "mcporter_bin": "/var/lib/openclaw/tools/node/npm/bin/mcporter",
   "mcporter_config": "/root/.openclaw/workspace/config/mcporter.json",
-  "request_message": "📸 ¡Hora de la Picture of the Day! Mándame la foto de hoy."
+  "request_message": "📸 ¡Hora de la Picture of the Day! Mándame la foto de hoy.",
+  "queue_dir": "/root/.openclaw/picoftheday-queue"
 }
