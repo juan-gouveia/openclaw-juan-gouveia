@@ -34,7 +34,7 @@
   - Maximum 6 news per run, maximum 3 per source, newest first
   - Only news published after the last review: the time in the doc's last "Actualizado:" line. First run (no doc yet): last 24 hours
   - Runs twice a day at 09:00 and 21:00 (Europe/Madrid)
-  - Destination: Google Doc "Noticias diarias de IA" in the Drive root (Zapier account)
+  - Destination: Google Doc "Noticias diarias de IA" in the Drive root (written via Google Drive API with a service account since 2026-10-01, no Zapier)
 
 3. What does a good output look like? Format, destination (a Doc, a Calendar event, a Telegram message…), and how you'll know it worked.
   - The doc "Noticias diarias de IA" (always the same file and link) is overwritten by the first run of the day: title, an "Actualizado: DD-MM-YYYY HH:MM (UTC+HH:MM)" line, and one section per source with its headlines as clickable links

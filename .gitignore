@@ -17,3 +17,6 @@ credentials/
 
 # Picture of the Day local state
 skills/picoftheday/state.json
+
+# noticias-ia local state (doc copy, Google token)
+skills/noticias-ia/state/
