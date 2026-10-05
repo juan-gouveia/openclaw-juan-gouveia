@@ -177,7 +177,16 @@ Pendiente: Skill 4 (resumen de progreso) cuando Juan lo pida.
 
 **19:00 — Juan:** Me voy por hoy. Actualiza tus archivos para que sepas que cuando vuelva continuamos con los skills que faltan.
 
-**19:00 — MAGI:** Estado guardado en MEMORY.md y SKILL_LOG.md. **Al retomar:** crear Skill 6 (detalle de tarea con feedback) — endpoint ya probado: `GET /v1/assignment/task/{task_id}` → 200 OK con `description` (feedback del revisor), fechas (delivered_at, reviewed_at), cohort y URLs de entrega. Ejemplo verificado: id=955197 (Dashboard Tailwind, feedback "Excelente trabajo! Responsive y super limpio!"). ⚠️ El token `FOURGEEKS_STUDENT_TOKEN` expira 2026-10-02 — verificar vigencia antes de continuar; si expiró, pedir a Juan la cookie `4g_tok` de learn.4geeks.com vía masked entry. Tras la Skill 6: proyecto completo (6/6 skills) y Juan puede subir SKILL_LOG.md a su repo personal de GitHub para entrega.
+**19:00 — MAGI:** Estado guardado en MEMORY.md y SKILL_LOG.md. **Al retomar:** crear Skill 6 (detalle de tarea con feedback) — endpoint ya probado: `GET /1/assignment/task/{task_id}` → 200 OK con `description` (feedback del revisor), fechas (delivered_at, reviewed_at), cohort y URLs de entrega. Ejemplo verificado: id=955197 (Dashboard Tailwind, feedback "Excelente trabajo! Responsive y super limpio!"). ⚠️ El token `FOURGEEKS_STUDENT_TOKEN` expira 2026-10-02 — verificar vigencia antes de continuar; si expiró, pedir a Juan la cookie `4g_tok` de learn.4geeks.com vía masked entry. Tras la Skill 6: proyecto completo (6/6 skills) y Juan puede subir SKILL_LOG.md a su repo personal de GitHub para entrega.
+
+## 2026-10-05
+
+**14:24 — Juan:** Magi, necesitamos renovar el token de 4geeks; ya lo tengo a mano, ¿cómo lo hacemos?
+
+**14:24 — MAGI:** Token solicitado vía masked entry de OpenClaw (secreto `FOURGEEKS_STUDENT_TOKEN`, host permitido breathecode.herokuapp.com) y almacenado en el store protegido. Verificación con el flujo de la Skill 1:
+- Path auth: `GET /v1/auth/token/<token>` → **200 OK**, user_id=1117, token_type=login, **expires_at=2026-10-09T15:36:39Z**.
+- Header auth: `GET /1/admissions/user/me` → **200 OK**, Juan Gouveia (id=1117, github=juan-gouveia).
+**Token renovado y operativo hasta el 9 oct 2026.** Las 6 skills de 4Geeks vuelven a funcionar. MEMORY.md actualizado con la nueva vigencia.
 
 ## 2026-10-01
 
