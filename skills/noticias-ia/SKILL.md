@@ -99,33 +99,14 @@ Write this block to `state/bloque.html` with a quoted heredoc (`cat > .../state/
 
 Build the full page in `state/nuevo.html`: in **new day** mode it is `bloque.html` alone; in **append** mode it is `hoy.html` followed by `bloque.html` (`cat hoy.html bloque.html > nuevo.html`). Then replace the doc content with a single upload (the doc keeps its id and link) and, only if Google answers 200, make it the new local copy.
 
-**Use Python for this step, NOT curl.** The credential-redaction layer replaces tokens in curl process args with a placeholder before curl runs, so curl can never authenticate to Drive (verified 2026-10-05: a wire capture showed Google receiving the placeholder instead of the real token). Python keeps the token in memory; its HTTP calls are not intercepted.
+Run this block exactly as written. Pass the token only with curl's `--oauth2-bearer` option, as below. Never write the `Authorization` header by hand, in a command or in a file: OpenClaw masks that header in everything you read, so a copied header carries a placeholder instead of the token and Google answers 401. Don't write helper scripts for this step.
 
-Write the upload script as a `.py` file with the `write` tool (shell heredocs get corrupted by the same redaction layer), then run it with `python3`:
-
-```python
-import os, urllib.request, urllib.error
-
-base = "/root/.openclaw/workspace/skills/noticias-ia/state"
-tok = open(os.path.join(base, "token")).read().strip()
-doc_id = [l.split("=", 1)[1].strip() for l in open("/root/.openclaw/.env") if l.startswith("NOTICIAS_IA_DOC_ID=")][0]
-body = open(os.path.join(base, "nuevo.html"), "rb").read()
-
-scheme = "To" + "ken "
-hdr = {"Authorization": scheme + tok}
-req = urllib.request.Request(
-    "https://www.googleapis.com/upload/drive/v3/files/" + doc_id + "?uploadType=media&fields=id",
-    data=body, method="PATCH", headers=hdr,
-)
-try:
-    with urllib.request.urlopen(req, timeout=30) as r:
-        print("http", r.status)
-        if r.status == 200:
-            os.rename(os.path.join(base, "nuevo.html"), os.path.join(base, "hoy.html"))
-            print("doc updated, hoy.html refreshed")
-except urllib.error.HTTPError as e:
-    print("http", e.code)
-    print(e.read().decode()[:300])
+```
+cd /root/.openclaw/workspace/skills/noticias-ia/state
+DOC_ID=$(grep '^NOTICIAS_IA_DOC_ID=' /root/.openclaw/.env | cut -d= -f2-)
+CODE=$(curl -s -m 60 -o resp.json -w '%{http_code}' -X PATCH --oauth2-bearer "$(cat token)" -H 'Content-Type: text/html; charset=UTF-8' --data-binary @nuevo.html "https://www.googleapis.com/upload/drive/v3/files/$DOC_ID?uploadType=media&fields=id")
+echo "http $CODE"
+if [ "$CODE" = 200 ]; then mv nuevo.html hoy.html && echo "doc updated, hoy.html refreshed"; else head -c 300 resp.json; echo; fi
 ```
 
 Expected output: `http 200` + `doc updated, hoy.html refreshed`.

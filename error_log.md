@@ -4,12 +4,14 @@ Log de errores del skill `noticias-ia`: recopila noticias de Wired y El País y 
 
 ---
 
-## Estado actual (2026-10-03 08:10 UTC) — INCIDENTE CERRADO
+## Estado actual (2026-10-06 06:55 UTC) — CORREGIDO (pendiente confirmar en ejecuciones programadas)
 
-- **Resolución**: verificación manual el 03-10 ~08:07 UTC mostró credenciales sanas (token emitido OK, GET de metadatos del doc → http 200). Los 401 fueron **transitorios**; la clave de la service account no estaba deshabilitada ni expirada.
-- **Publicación recuperada**: 03-10 10:11 (Europe/Madrid), modo "nuevo día", 5 noticias nuevas (Wired 2, El País 3) subidas con http 200.
-- El doc vuelve a estar actualizado; la automatización de las 21:00 debe operar con normalidad.
-- Recomendación de seguimiento: si los 401 transitorios se repiten, considerar reintentos con backoff en el paso 5 del skill (regenerar token y esperar antes de reintentar, en vez de fallar al instante).
+- **Causa raíz**: el agente copiaba una cabecera `Authorization` enmascarada por OpenClaw (placeholder en lugar del token). Desde el 05-10, además, el paso 5 usaba un esquema de autorización que Google no acepta. Detalle en la sección **2026-10-06** al final.
+- **Corrección**: paso 5 del SKILL.md con `curl --oauth2-bearer` + `Content-Type: text/html`; eliminados los auxiliares rotos de `state/`.
+- **Prueba**: ejecución manual de la automatización el 06-10 08:47 (Europe/Madrid), modo "nuevo día", 4 noticias (Wired 1, El País 3). Subida con `http 200` **al primer intento**, sin reintentos ni depuración; el doc exportado muestra el bloque del 06-10 08:48; Telegram entregado.
+- **06-10 09:00 (programada, modo append)**: sin fallos (confirmado por Juan).
+- **Pendiente**: confirmar la ejecución programada del 06-10 a las 21:00 para cerrar el caso.
+- La sección "INCIDENTE CERRADO" del 03-10 y su diagnóstico de "401 transitorios" quedan **invalidados**; se conservan abajo como historial.
 
 ---
 
@@ -83,3 +85,21 @@ Acción única pendiente (opcional): si se repite, añadir reintento con backoff
 - Patrón observado: las subidas **manuales** (script Python directo) funcionan; las ejecutadas desde el **skill en sesiones automatizadas** fallan con 401. Diferencia clave: el skill usa el bloque bash con openssl desde SKILL.md, el script manual emite el JWT con la librería `cryptography`. Hipótesis actualizada: el comando bash del skill puede estar produciendo un JWT inválido (firma o claim) en el contexto de la automatización aislada, o el token se guarda corrupto en `state/token`.
 - Próximo paso sugerido: reemplazar el paso 1 del skill (bloque bash+openssl) por el script Python de diagnóstico (`/tmp/sa_diag.py`, parte de firma) que sí produce tokens aceptados, o añadir verificación tras la firma antes de guardar.
 - Doc conserva contenido del 03-10 10:11. Las noticias de la ejecución de las 21:00 no se publican; se recuperarán en la próxima ejecución exitosa (el corte sale de hoy.html).
+
+---
+
+### 2026-10-06 — CAUSA RAÍZ REAL Y CORRECCIÓN
+
+**Los 401 no eran transitorios ni un problema de la clave de la service account.** Diagnóstico hecho revisando los comandos reales de cada ejecución en la base de datos de transcripciones de OpenClaw (`agents/main/agent/openclaw-agent.sqlite`).
+
+- **Mecanismo**: OpenClaw enmascara las cabeceras de autorización en todo el texto que llega al modelo (resultados de herramientas, lecturas de archivos; ver `docs/logging.md`, "Model-visible tool-result text… authorization headers… remain masked"). El paso 5 antiguo escribía la cabecera `Authorization` a mano con `$(cat …/token)`. El agente la veía con el valor sustituido por `***` y **la copiaba literalmente**, así que curl enviaba un placeholder en vez del token → Google respondía `401 Invalid Credentials`. Regenerar el token no cambiaba nada.
+- **Por qué funcionaba "a veces"**: solo cuando el modelo, depurando, construyó la cabecera de otra forma en vez de copiarla: 02-10 09:00 (con `printf` y `%s`) y 04-10 09:00 (con `curl --oauth2-bearer`). Las subidas manuales funcionaban por lo mismo. El falso diagnóstico del 01-10 ("mi vista del archivo está redactada") era correcto en el mecanismo, pero se sacó la conclusión equivocada.
+- **Regresión del 05-10**: el paso 5 se reescribió en Python con el esquema `"To"+"ken "` para esquivar la máscara. Google solo acepta el esquema OAuth estándar, así que la petición llega como anónima → 401/403 **en todas las ejecuciones** desde el 05-10 21:00. La afirmación del SKILL.md de que "el proxy reemplaza los tokens en los argumentos de curl" era falsa: el proxy de secretos solo sustituye sentinels del almacén de OpenClaw y el token de Google no lo es.
+- **Verificación (06-10 ~06:40 UTC, solo GET)**: token emitido por el bloque del paso 1 + esquema OAuth estándar → 200; mismo token con esquema `Token` → 403; cabecera con placeholder literal → 401 Invalid Credentials (el error exacto del log).
+
+**Correcciones aplicadas (06-10 08:47 Europe/Madrid)**:
+1. `skills/noticias-ia/SKILL.md` paso 5: vuelve a curl, pasando el token **solo** con `--oauth2-bearer "$(cat token)"` (no forma una cabecera que se pueda enmascarar ni copiar mal) y con `Content-Type: text/html` (el script de Python no lo enviaba). Instrucción explícita de no escribir la cabecera a mano ni crear scripts auxiliares.
+2. Eliminados del `state/` los auxiliares obsoletos/rotos (`upload.py` con el esquema incorrecto, `upload.sh` con la cabecera enmascarada guardada en disco y comillas sin cerrar, y los diagnósticos `r2.json` y `about.json`). Copia en `/root/.openclaw/backups/noticias-ia-state-20261006/`.
+3. Se descarta la recomendación de "reintentos con backoff": no habría servido.
+
+**Regla para el futuro**: no diagnosticar fallos de autenticación leyendo comandos o archivos desde el agente (se ven enmascarados), y nunca escribir la cabecera `Authorization` en un SKILL.md; usar `--oauth2-bearer`.
