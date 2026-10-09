@@ -103,3 +103,9 @@ Acción única pendiente (opcional): si se repite, añadir reintento con backoff
 3. Se descarta la recomendación de "reintentos con backoff": no habría servido.
 
 **Regla para el futuro**: no diagnosticar fallos de autenticación leyendo comandos o archivos desde el agente (se ven enmascarados), y nunca escribir la cabecera `Authorization` en un SKILL.md; usar `--oauth2-bearer`.
+
+### 2026-10-06 19:02 / 2026-10-07 07:01 UTC — INCIDENTE CERRADO (evidencia automatización)
+- Las dos ejecuciones programadas posteriores funcionaron sin intervención manual:
+  - 2026-10-06 19:02 UTC (actualización de la noche): 4 noticias nuevas (Wired 2, El País 2), publicadas y entregadas a Telegram.
+  - 2026-10-07 07:01 UTC (ejecución matinal): 5 noticias nuevas (Wired 3, El País 2), publicadas y entregadas.
+- Los 401 de oct 2-3 no se han repetido. El patrón "automatizadas fallan / manuales funcionan" no se reprodujo. Cierre definitivo: las automatizaciones operan con normalidad.

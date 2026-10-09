@@ -54,5 +54,21 @@
   - Automation `noticias-ia` created (daily 09:00 Europe/Madrid). Agent test runs on 2026-09-29 OK: doc created, 4 news picked correctly after the cutoff, final text is only the Telegram message
   - 2026-09-30: first scheduled run OK. Added the 21:00 pass (append mode, step 3 skipped); automation schedule changed to `0 9,21 * * *`
 
+## MEGA keep-alive
 
-## 
+1. What does this skill do? One sentence.
+  - Every two months this skill logs in to each of the user's mega.nz accounts so MEGA doesn't close them for inactivity.
+
+2. What input does the agent need? What do you give it, in what format — and what does it already know from the five configuration files?
+  - One credentials file per account in `/root/.openclaw/credentials/mega/<label>.megarc` (`[Login]` / `Username =` / `Password =`), created by the user by hand; the label names the account in messages
+  - Runs on day 1 of every odd month (Jan, Mar, May, Jul, Sep, Nov) at 10:00 Europe/Madrid
+
+3. What does a good output look like? Format, destination (a Doc, a Calendar event, a Telegram message…), and how you'll know it worked.
+  - All logins OK: nothing is sent (final text `NO_REPLY`); `state/last_ok_<label>` gets the date
+  - Any login fails (after one retry 2 minutes later): a short Telegram message naming the failed accounts, the error with a hint, and a reminder to log in by hand on mega.nz
+  - It worked if: no Telegram message, `last_ok_*` dates updated, and the account's "Sesiones" list on mega.nz shows the new session
+
+4. Implementation (2026-10-09) — `skills/mega-keepalive/`, only `SKILL.md`, no scripts
+  - `megatools df --config <file>` (logs in, reads the quota, exits). Uses the upstream static build 1.11.5 in `/opt/megatools` (link `/usr/local/bin/megatools`): the Ubuntu package 1.10.3 gets HTTP 402 because MEGA now requires a hashcash challenge at login
+  - Accounts with 2FA can't log in with megatools (would need MEGAcmd)
+  - Automation `mega-keepalive`: `0 10 1 */2 *` Europe/Madrid, isolated, announce to the user's Telegram chat; silence comes from the `NO_REPLY` final text

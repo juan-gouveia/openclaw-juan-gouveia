@@ -20,3 +20,6 @@ skills/picoftheday/state.json
 
 # noticias-ia local state (doc copy, Google token)
 skills/noticias-ia/state/
+
+# mega-keepalive local state (last login dates)
+skills/mega-keepalive/state/
